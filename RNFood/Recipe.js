@@ -8,15 +8,21 @@ import {
   StyleSheet,
   Text,
   View,
+  ScrollView,
   Button,
 } from 'react-native';
+// import PropTypes from 'prop-types';
+
+import Title from './Title';
+import CardWithImage from './CardWithImage';
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: 'white',
+    paddingLeft: 16,
+    paddingRight: 16,
   },
 });
 
@@ -26,18 +32,22 @@ export default class Recipe extends Component {
   };
 
   render() {
-    const { navigate } = this.props.navigation;
+    const { navigate, state: { params } } = this.props.navigation;
+    const { name, photo } = params;
 
     return (
-      <View style={styles.container}>
-        <Text>Some Text</Text>
+      <ScrollView style={styles.container}>
+        <Title text={name} />
+        <CardWithImage
+          image={photo}
+        />
 
         <Button
           onPress={() => navigate('InteractiveRecipe')}
           title="Enter Interactive Mode"
           color="#841584"
         />
-      </View>
+      </ScrollView>
     );
   }
 }

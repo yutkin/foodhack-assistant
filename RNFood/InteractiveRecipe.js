@@ -16,6 +16,8 @@ import TimerMixin from 'react-timer-mixin';
 import SpeechToText from 'react-native-speech-to-text-ios';
 import Tts from 'react-native-tts';
 
+import CardWithImage from './CardWithImage';
+
 
 const styles = StyleSheet.create({
   container: {
@@ -23,6 +25,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+    paddingLeft: 16,
+    paddingRight: 16,
   },
 });
 
@@ -112,6 +116,8 @@ export default class InteractiveRecipe extends Component {
 
     return (
       <View style={styles.container}>
+        <CardWithImage />
+
         <Text>{isRecognizing ? 'recognizing' : 'not recognizing'}</Text>
         <Text>{lastResult}</Text>
 
