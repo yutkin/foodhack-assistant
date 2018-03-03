@@ -1,8 +1,7 @@
 import json
 import os
 import glob
-import random
-import numpy as np
+
 from scipy.spatial.distance import cosine
 
 from flask import Flask, jsonify,  Response
@@ -10,23 +9,27 @@ from fastText import FastText
 
 
 app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False
 
 PATH_TO_RECIPES = './recipes'
-PATH_TO_FASTTEXT_MODEL = './wiki.ru.bin'
+PATH_TO_FASTTEXT_MODEL = '/home/ubuntu/wiki.ru.bin'
 RECIPES = []
 FASTTEXT = None
 
 INTENTS = {
-        'repeat_step': ('повтори рецепт', 'давай заново', 'прочитай снова', 'начни заново',
-                        'повторим', 'еще раз', 'прочитай еще раз'),
-        'step_next': ('дальше', 'я сделал', 'готово', 'давай дальше', 'следующий шаг',
-                      'закончили', 'шаг вперед'),
-        'step_back': ('назад', 'вернемся', "давай вернемся назад", 'шаг назад'),
-        'stop_cooking': ('стоп', "остановись", "перерыв", "давай остановимся",
-                         'перестань', 'хватит'),
-        'unknown': None
-    }
+    'repeat_step': ('повтори рецепт', 'давай заново', 'прочитай снова', 'начни заново', 'повторим',
+                    'еще раз', 'прочитай еще раз', 'воспроизведи еще раз', 'прочитай вновь',
+                    "давай по-новому"),
+
+    'step_next': ('дальше', 'я сделал', 'готово', 'давай дальше', 'следующий шаг', 'шаг вперед',
+                  'я приготовил', 'приготовленно', 'я закончил', 'закончено', "давай продолжим",
+                  "продолжай"),
+
+    'step_back': ('назад', 'вернемся', "давай вернемся назад", 'шаг назад', 'давай обратно',
+                  'вернись назад'),
+
+    'stop_cooking': ('стоп', "остановись", "перерыв", "давай остановимся", 'перестань', 'хватит',
+                     'тормози', 'притормози', "кончай", "оканчивай")
+}
 
 
 def init_list_of_recipes():
@@ -39,24 +42,22 @@ def init_list_of_recipes():
 
 def init_fasttext():
     global FASTTEXT
+    app.logger.info('Trying to load FastText...')
     FASTTEXT = FastText.load_model(PATH_TO_FASTTEXT_MODEL)
-
-
-def get_closest_dist(text, list_of_examples):
-    return np.min([cosine(FASTTEXT.get_sentence_vector(text), FASTTEXT.get_sentence_vector(item))
-                   for item in list_of_examples])
+    app.logger.info('FastText has been loaded.')
 
 
 @app.route('/api/get_text_intent/<text>')
 def get_text_intent(text):
-    min_dist, intent = 1e9, None
+    min_dist, best_intent = 1e9, None
+    text_vector = FASTTEXT.get_sentence_vector(text)
     for intent, examples in INTENTS.items():
-        d = get_closest_dist(text, examples)
+        d = min(cosine(text_vector, FASTTEXT.get_sentence_vector(item)) for item in examples)
         if d < min_dist:
-            min_dist, intent = d, intent
-    if min_dist > 0.4:
-        intent = 'unknown'
-    return jsonify({'intent': intent})
+            min_dist, best_intent = d, intent
+    if min_dist > 0.4 or best_intent is None:
+        best_intent = 'unknown'
+    return jsonify({'intent': best_intent})
 
 
 @app.route('/api/get_recipes')
@@ -66,12 +67,11 @@ def get_recipes():
 
 
 def main():
-    # APP.run(host='0.0.0.0', port=80, debug=False, threaded=True)
-
     init_list_of_recipes()
-    # init_fasttext()
+    init_fasttext()
 
-    app.run(host='0.0.0.0', port=8888, debug=False, threaded=True)
+    # app.run(host='0.0.0.0', port=8888, debug=True, threaded=False)
+    app.run(host='0.0.0.0', port=8888, debug=False, threaded=True, ssl_context='adhoc')
 
 
 if __name__ == '__main__':
