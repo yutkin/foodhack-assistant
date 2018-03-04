@@ -1,1 +1,2 @@
-# food-hack-assistant
+# foodhack
+Голосовой ассистент для Партии Еды
