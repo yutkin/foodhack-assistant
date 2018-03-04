@@ -5,10 +5,8 @@ import glob
 from scipy.spatial.distance import cosine
 
 from flask import Flask, jsonify,  Response
+
 from fastText import FastText
-
-
-app = Flask(__name__)
 
 PATH_TO_RECIPES = './recipes'
 PATH_TO_FASTTEXT_MODEL = '/home/ubuntu/wiki.ru.bin'
@@ -28,7 +26,7 @@ INTENTS = {
                   'вернись назад'),
 
     'stop_cooking': ('стоп', "остановись", "перерыв", "давай остановимся", 'перестань', 'хватит',
-                     'тормози', 'притормози', "кончай", "оканчивай")
+                     'тормози', 'притормози', "кончай", "оканчивай", "завершай")
 }
 
 
@@ -42,9 +40,13 @@ def init_list_of_recipes():
 
 def init_fasttext():
     global FASTTEXT
-    app.logger.info('Trying to load FastText...')
     FASTTEXT = FastText.load_model(PATH_TO_FASTTEXT_MODEL)
-    app.logger.info('FastText has been loaded.')
+
+
+init_list_of_recipes()
+init_fasttext()
+
+app = Flask(__name__)
 
 
 @app.route('/api/get_text_intent/<text>')
@@ -66,13 +68,12 @@ def get_recipes():
                     content_type="application/json; charset=utf-8")
 
 
-def main():
-    init_list_of_recipes()
-    init_fasttext()
 
-    # app.run(host='0.0.0.0', port=8888, debug=True, threaded=False)
-    app.run(host='0.0.0.0', port=8888, debug=False, threaded=True, ssl_context='adhoc')
+# app.run(host='0.0.0.0', port=8888, debug=True, threaded=False)
+# app.run(host='0.0.0.0', port=80, debug=False, threaded=True)#, ssl_context='adhoc')
+# app.run(host='0.0.0.0', port=443, debug=False, threaded=True, ssl_context=('/etc/letsencrypt/live/import20k.today/fullchain.pem',
+#                                                                            '/etc/letsencrypt/live/import20k.today/privkey.pem'))
 
 
 if __name__ == '__main__':
-    main()
+    app.run(host='0.0.0.0')
