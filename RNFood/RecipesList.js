@@ -6,11 +6,8 @@ import React, { Component } from 'react';
 import {
   Platform,
   StyleSheet,
-  Text,
   View,
   ScrollView,
-  Button,
-  Fragment,
   TouchableOpacity,
 } from 'react-native';
 
@@ -27,7 +24,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingLeft: 16,
     paddingRight: 16,
-    marginTop: 0 - (20 + 64),
+    // marginTop: 0 - (20 + 64),
   },
   navigationPlaceholder: {
     marginTop: 20 + 64,
@@ -36,21 +33,22 @@ const styles = StyleSheet.create({
 
 export default class RecipesList extends Component {
   static navigationOptions = {
-    title: 'Home',
+    title: null,
+    headerBackTitle: 'Назад',
     headerStyle: {
       // position: 'relative',
       // backgroundColor: 'white',
-      // borderBottomWidth: 0,
-      opacity: 0,
+      borderBottomWidth: 0,
+      // opacity: 0,
     },
-    // headerTransparent: true,
+    headerTransparent: true,
   };
 
-  constructor(props) {
-    super(props);
+  // constructor(props) {
+  //   super(props);
 
-    console.log('wow', recipesData);
-  }
+  //   console.log('wow', recipesData);
+  // }
 
   render() {
     const { navigate } = this.props.navigation;

@@ -60,7 +60,14 @@ Tts.setDefaultLanguage('ru-RU');
 
 export default class InteractiveRecipe extends Component {
   static navigationOptions = {
-    title: 'Interactive Mode',
+    headerTintColor: '#FF5145',
+    headerStyle: {
+      // position: 'relative',
+      // backgroundColor: 'white',
+      borderBottomWidth: 0,
+      // opacity: 0,
+    },
+    headerTransparent: true,
   };
 
   constructor(props) {

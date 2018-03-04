@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingLeft: 16,
     paddingRight: 16,
+    // marginTop: 0 - (20 + 64),
   },
   button: {
     backgroundColor: '#FC786F',
@@ -42,11 +43,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
+  navigationPlaceholder: {
+    marginTop: 20 + 64,
+  },
 });
 
 export default class Recipe extends Component {
   static navigationOptions = {
-    title: 'Recipe',
+    title: null,
+    headerBackTitle: 'Назад',
+    headerTintColor: '#FF5145',
+    headerStyle: {
+      // position: 'relative',
+      // backgroundColor: 'white',
+      borderBottomWidth: 0,
+      // opacity: 0,
+    },
+    headerTransparent: true,
   };
 
   render() {
@@ -61,6 +74,8 @@ export default class Recipe extends Component {
 
     return (
       <ScrollView style={styles.container}>
+        <View style={styles.navigationPlaceholder} />
+
         <Title text={name} />
         <CardWithImage image={photo} />
 
