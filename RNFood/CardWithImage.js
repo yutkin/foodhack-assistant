@@ -14,8 +14,16 @@ const styles = {
     width: '100%',
     height: 281,
     borderRadius: 20,
-    overflow: 'hidden',
     marginBottom: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 10, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+  },
+  bgWrapper: {
+    flex: 1,
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   bg: {
     flex: 1,
@@ -50,20 +58,22 @@ export default class CardWithImage extends Component {
 
     return (
       <View style={styles.container}>
-        <ImageBackground
-          style={styles.bg}
-          source={image}
-        >
-          <View
-            style={Object.assign(
-              {},
-              styles.inner,
-              title ? styles.innerBlend : {},
-            )}
+        <View style={styles.bgWrapper}>
+          <ImageBackground
+            style={styles.bg}
+            source={image}
           >
-            <Text style={styles.title}>{title}</Text>
-          </View>
-        </ImageBackground>
+            <View
+              style={Object.assign(
+                {},
+                styles.inner,
+                title ? styles.innerBlend : {},
+              )}
+            >
+              <Text style={styles.title}>{title}</Text>
+            </View>
+          </ImageBackground>
+        </View>
       </View>
     );
   }
