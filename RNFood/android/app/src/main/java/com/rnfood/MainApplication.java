@@ -3,6 +3,7 @@ package com.rnfood;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.RNProximity.RNProximityPackage;
 import net.no_mad.tts.TextToSpeechPackage;
 import net.no_mad.tts.TextToSpeechPackage;
 import com.facebook.react.ReactNativeHost;
@@ -25,6 +26,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNProximityPackage(),
             new TextToSpeechPackage(),
             new TextToSpeechPackage()
       );

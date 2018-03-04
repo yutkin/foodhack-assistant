@@ -16,9 +16,10 @@ import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin';
 import SpeechToText from 'react-native-speech-to-text-ios';
 import Tts from 'react-native-tts';
+import Proximity from 'react-native-proximity';
 
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     backgroundColor: 'white',
@@ -33,13 +34,18 @@ const styles = StyleSheet.create({
     padding: 22,
     backgroundColor: 'rgba(0, 0, 0, .5)',
   },
-  redButton: {
+  button: {
     width: 82,
     height: 82,
-    backgroundColor: '#FF5145',
     borderRadius: 82,
     marginTop: 15,
     marginBottom: 15,
+    borderWidth: 5,
+    borderColor: '#FF5145',
+    backgroundColor: '#2e2e2e',
+  },
+  redButton: {
+    backgroundColor: '#FF5145',
   },
   text: {
     color: 'white',
@@ -51,7 +57,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     textAlign: 'center',
   },
-});
+};
 
 const RECOGNITION_TIMEOUT = 1000; // 1.5 seconds
 const POLLING_INTERVAL = 100;
@@ -73,6 +79,7 @@ export default class InteractiveRecipe extends Component {
   constructor(props) {
     super(props);
     this.checkUserFinishedSpeaking = this.checkUserFinishedSpeaking.bind(this);
+    this.onProximityUpdate = this.onProximityUpdate.bind(this);
   }
 
   state = {
@@ -87,6 +94,9 @@ export default class InteractiveRecipe extends Component {
       'SpeechToText',
       result => this.processRecognitionResult(result),
     );
+
+    Proximity.addListener(this.onProximityUpdate);
+
     this.speak();
   }
 
@@ -105,6 +115,19 @@ export default class InteractiveRecipe extends Component {
 
     this.subscription.remove();
     this.subscription = null;
+
+    Proximity.removeListener(this.onProximityUpdate);
+  }
+
+  onProximityUpdate({ proximity }) {
+    // consoole.log('***', proximity);
+    // console.log(this.state);
+    // alert(JSON.stringify(proximity));
+    if (!proximity) {
+      return;
+    }
+
+    this.startRecognition();
   }
 
   startRecognition() {
@@ -236,9 +259,14 @@ export default class InteractiveRecipe extends Component {
         ? this.finishRecognition()
         : this.startRecognition()
     );
+    const style = Object.assign(
+      {},
+      styles.button,
+      isRecognizing ? styles.redButton : {},
+    );
     return (
       <TouchableOpacity onPress={onPress}>
-        <View style={styles.redButton} />
+        <View style={style} />
       </TouchableOpacity>
     );
   }
