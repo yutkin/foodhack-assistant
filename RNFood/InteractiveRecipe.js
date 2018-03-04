@@ -10,23 +10,25 @@ import {
   View,
   Button,
   NativeAppEventEmitter,
+  ImageBackground,
 } from 'react-native';
 import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin';
 import SpeechToText from 'react-native-speech-to-text-ios';
 import Tts from 'react-native-tts';
 
-import CardWithImage from './CardWithImage';
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    paddingLeft: 16,
-    paddingRight: 16,
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    backgroundColor: 'white',
+    // paddingLeft: 16,
+    // paddingRight: 16,
+  },
+  bg: {
+    flex: 1,
   },
 });
 
@@ -43,11 +45,13 @@ export default class InteractiveRecipe extends Component {
   constructor(props) {
     super(props);
     this.checkUserFinishedSpeaking = this.checkUserFinishedSpeaking.bind(this);
-    this.state = {
-      isRecognizing: false,
-      lastResult: null,
-      lastResultAt: null,
-    };
+  }
+
+  state = {
+    isRecognizing: false,
+    lastResult: null,
+    lastResultAt: null,
+    stepIndex: 0,
   }
 
   componentDidMount() {
@@ -111,29 +115,53 @@ export default class InteractiveRecipe extends Component {
     });
   }
 
-  render() {
-    const { lastResult, isRecognizing } = this.state;
+  renderRecognizingView() {
+    const { lastResult } = this.state;
 
     return (
-      <View style={styles.container}>
-        <CardWithImage />
-
-        <Text>{isRecognizing ? 'recognizing' : 'not recognizing'}</Text>
+      <View>
         <Text>{lastResult}</Text>
+      </View>
+    );
+  }
 
-        {!isRecognizing && (
-          <Button
-            onPress={() => this.onStartRecognition()}
-            title="Start recognition"
-            color="#841584"
-          />
-        )}
+  renderStepView() {
+    return (
+      <View>
+        <Button
+          onPress={() => this.onStartRecognition()}
+          title="Start recognition"
+          color="#841584"
+        />
 
         <Button
           onPress={() => Tts.speak('Помой морковку, почисти и порежь ее кружочками')}
           title="Speak something"
           color="#841584"
         />
+      </View>
+    );
+  }
+
+  render() {
+    const { lastResult, isRecognizing, stepIndex } = this.state;
+    const { state: { params: { microsteps } } } = this.props.navigation;
+
+    const step = microsteps[stepIndex] || null;
+    const allDone = step === null;
+
+    return (
+      <View style={styles.container}>
+        <ImageBackground
+          style={styles.bg}
+          source={step.photo}
+        >
+          {
+            isRecognizing
+              ? this.renderRecognizingView()
+              : this.renderStepView()
+          }
+        </ImageBackground>
       </View>
     );
   }

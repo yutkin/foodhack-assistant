@@ -20,11 +20,16 @@ const styles = {
 export default class Title extends Component {
   static propTypes = {
     text: PropTypes.string.isRequired,
+    style: PropTypes.object,
+  }
+
+  static defaultProps = {
+    style: {},
   }
 
   render() {
     return (
-      <Text style={styles.text}>{this.props.text}</Text>
+      <Text style={{ ...styles.text, ...this.props.style }}>{this.props.text}</Text>
     );
   }
 }
