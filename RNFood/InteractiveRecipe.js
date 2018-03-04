@@ -154,6 +154,7 @@ export default class InteractiveRecipe extends Component {
     this.clearInterval(this.pollingTimerId);
     this.pollingTimerId = null;
 
+    this.setState({ isRecognizing: false });
     SpeechToText.finishRecognition();
   }
 
@@ -167,7 +168,9 @@ export default class InteractiveRecipe extends Component {
       if (step) {
         text = step.text; // eslint-disable-line
       } else {
-        text = 'BEEP';
+        // text = 'BEEP';
+        text = 'Все готово, приятного аппетита!';
+        this.props.navigation.goBack();
       }
     }
 
@@ -203,7 +206,9 @@ export default class InteractiveRecipe extends Component {
         this.setState({ stepIndex: stepIndex - 1 });
         break;
       case 'stop_cooking':
-        this.setState({ stepIndex: 999 });
+        // this.setState({ stepIndex: 999 });
+        this.speak('Хорошо');
+        this.props.navigation.goBack();
         break;
       case 'unknown':
       default:
@@ -214,7 +219,11 @@ export default class InteractiveRecipe extends Component {
   }
 
   async requestIntent(text) {
-    const queryText = encodeURIComponent(text.toLowerCase());
+    const queryText = encodeURIComponent(text.trim().toLowerCase());
+    if (!queryText.length) {
+      return;
+    }
+
     const url = `https://import20k.today/api/get_text_intent/${queryText}`;
 
     try {
@@ -223,7 +232,7 @@ export default class InteractiveRecipe extends Component {
       // this.setState({ intent });
       this.processIntent(intent);
     } catch (err) {
-      alert('Couldn\'t fetch intent. Please refer to the logs for more info.');
+      global.alert('Couldn\'t fetch intent. Please refer to the logs for more info.');
       console.warn(JSON.stringify(err));
     }
   }
@@ -235,7 +244,7 @@ export default class InteractiveRecipe extends Component {
   }) {
     if (error) {
       console.warn('Couldn\'t recognize user\'s speech', JSON.stringify(error));
-      global.alert('Unknown error occurred. Please refer to the logs to see more info.');
+      // global.alert('Unknown error occurred. Please refer to the logs to see more info.');
       return;
     }
 
@@ -303,17 +312,18 @@ export default class InteractiveRecipe extends Component {
   }
 
   render() {
-    const { lastResult, isRecognizing, stepIndex } = this.state;
+    const { isRecognizing, stepIndex } = this.state;
     const { state: { params: { microsteps } } } = this.props.navigation;
 
     const step = microsteps[stepIndex] || null;
     const allDone = step === null;
+    const image = !allDone ? step.photo : microsteps[0].photo;
 
     return (
       <View style={styles.container}>
         <ImageBackground
           style={styles.bg}
-          source={step.photo}
+          source={image}
         >
           {
             isRecognizing
