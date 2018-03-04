@@ -61,6 +61,14 @@ export default class InteractiveRecipe extends Component {
     );
   }
 
+  componentDidUpdate(prevProps, { stepIndex: prevStepIndex }) {
+    const { stepIndex } = this.state;
+
+    if (stepIndex !== prevStepIndex) {
+      this.speak();
+    }
+  }
+
   componentWillUnmount() {
     if (!this.subscription) {
       return;
@@ -97,6 +105,77 @@ export default class InteractiveRecipe extends Component {
     SpeechToText.finishRecognition();
   }
 
+  speak(customText) {
+    const { stepIndex } = this.state;
+    const { state: { params: { microsteps } } } = this.props.navigation;
+    const step = microsteps[stepIndex] || null;
+
+    let text = customText;
+    if (!text) {
+      if (step) {
+        text = step.text; // eslint-disable-line
+      } else {
+        text = 'Пик';
+      }
+    }
+
+    return Tts.speak(text);
+  }
+
+  processIntent(intent) {
+    const { stepIndex } = this.state;
+    //     'repeat_step': ('повтори рецепт', 'давай заново', 'прочитай снова', 'начни заново',
+    //     'повторим', 'еще раз', 'прочитай еще раз'),
+    // 'step_next': ('дальше', 'я сделал', 'готово', 'давай дальше', 'следующий шаг',
+    //   'закончили', 'шаг вперед'),
+    // 'step_back': ('назад', 'вернемся', "давай вернемся назад", 'шаг назад'),
+    // 'stop_cooking': ('стоп', "остановись", "перерыв", "давай остановимся",
+    //      'перестань', 'хватит'),
+    // 'unknown': None
+    switch (intent) {
+      case 'repeat_step':
+        // use tts again to speak out the step
+        this.speak();
+        break;
+      case 'step_next':
+        // speak "следующий шаг: фыыаыва"
+        this.setState({ stepIndex: stepIndex + 1 });
+        break;
+      case 'step_back':
+        if (stepIndex === 0) {
+          // use tts again to speak out the step
+          this.speak();
+          return;
+        }
+
+        this.setState({ stepIndex: stepIndex - 1 });
+        break;
+      case 'stop_cooking':
+        this.setState({ stepIndex: 999 });
+        break;
+      case 'unknown':
+      default:
+        // speak "не совсем понимаю тебя"
+        this.speak('Не совсем понимаю тебя');
+        break;
+    }
+  }
+
+  async requestIntent(text) {
+    const queryText = encodeURIComponent(text.toLowerCase());
+    const url = `https://import20k.today/api/get_text_intent/${queryText}`;
+
+    try {
+      const response = await global.fetch(url);
+      const { intent } = await response.json();
+      // this.setState({ intent });
+      this.processIntent(intent);
+    } catch (err) {
+      alert('Couldn\'t fetch intent. Please refer to the logs for more info.');
+      console.warn(JSON.stringify(err));
+    }
+  }
+
   processRecognitionResult({
     error,
     bestTranscription: { formattedString } = {},
@@ -113,6 +192,12 @@ export default class InteractiveRecipe extends Component {
       lastResult: formattedString,
       lastResultAt: Date.now(),
     });
+
+    if (!isFinal) {
+      return;
+    }
+
+    this.requestIntent(formattedString);
   }
 
   renderRecognizingView() {
