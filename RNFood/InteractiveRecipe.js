@@ -8,9 +8,9 @@ import {
   StyleSheet,
   Text,
   View,
-  Button,
   NativeAppEventEmitter,
   ImageBackground,
+  TouchableOpacity,
 } from 'react-native';
 import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin';
@@ -21,14 +21,35 @@ import Tts from 'react-native-tts';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: 'center',
-    // alignItems: 'center',
     backgroundColor: 'white',
-    // paddingLeft: 16,
-    // paddingRight: 16,
   },
   bg: {
     flex: 1,
+  },
+  inner: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 22,
+    backgroundColor: 'rgba(0, 0, 0, .5)',
+  },
+  redButton: {
+    width: 82,
+    height: 82,
+    backgroundColor: '#FF5145',
+    borderRadius: 82,
+    marginTop: 15,
+    marginBottom: 15,
+  },
+  text: {
+    color: 'white',
+    fontSize: 30,
+    textAlign: 'center',
+  },
+  subtext: {
+    color: 'white',
+    fontSize: 22,
+    textAlign: 'center',
   },
 });
 
@@ -59,6 +80,7 @@ export default class InteractiveRecipe extends Component {
       'SpeechToText',
       result => this.processRecognitionResult(result),
     );
+    this.speak();
   }
 
   componentDidUpdate(prevProps, { stepIndex: prevStepIndex }) {
@@ -78,7 +100,7 @@ export default class InteractiveRecipe extends Component {
     this.subscription = null;
   }
 
-  onStartRecognition() {
+  startRecognition() {
     SpeechToText.startRecognition('ru-RU');
 
     this.setState({ isRecognizing: true, lastResultAt: null });
@@ -115,7 +137,7 @@ export default class InteractiveRecipe extends Component {
       if (step) {
         text = step.text; // eslint-disable-line
       } else {
-        text = 'Пик';
+        text = 'BEEP';
       }
     }
 
@@ -200,30 +222,47 @@ export default class InteractiveRecipe extends Component {
     this.requestIntent(formattedString);
   }
 
+  renderRecordButton() {
+    const { isRecognizing } = this.state;
+    const onPress = () => (
+      isRecognizing
+        ? this.finishRecognition()
+        : this.startRecognition()
+    );
+    return (
+      <TouchableOpacity onPress={onPress}>
+        <View style={styles.redButton} />
+      </TouchableOpacity>
+    );
+  }
+
   renderRecognizingView() {
     const { lastResult } = this.state;
 
     return (
-      <View>
-        <Text>{lastResult}</Text>
+      <View style={styles.inner}>
+        <Text style={styles.text}>Говорите</Text>
+        {this.renderRecordButton()}
+        <Text style={styles.subtext}>{lastResult}</Text>
       </View>
     );
   }
 
   renderStepView() {
-    return (
-      <View>
-        <Button
-          onPress={() => this.onStartRecognition()}
-          title="Start recognition"
-          color="#841584"
-        />
+    const { stepIndex } = this.state;
+    const { state: { params: { microsteps } } } = this.props.navigation;
 
-        <Button
-          onPress={() => Tts.speak('Помой морковку, почисти и порежь ее кружочками')}
-          title="Speak something"
-          color="#841584"
-        />
+    const step = microsteps[stepIndex] || null;
+    return (
+      <View style={styles.inner}>
+        {!!step && [
+          <Text style={styles.text}>{step.text}</Text>,
+          this.renderRecordButton(),
+          <Text style={styles.subtext}>
+            Нажмите на кнопку или проведите рукой над камерой
+            и скажите «Готово», когда закончите с этим шагом
+          </Text>,
+        ]}
       </View>
     );
   }
